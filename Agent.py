@@ -136,15 +136,13 @@ class DQNAgent(object):
         self.memory.push(state, action, next_state, reward, done)
 
 class SarsaTable:
-    def __init__(self, actions, learning_rate=0.01, reward_decay=0.9, e_greedy=0.9):
+    def __init__(self, actions, learning_rate=0.01, reward_decay=0.9):
         # List of actions
         self.actions = actions
         # Learning rate
         self.lr = learning_rate
         # Value of gamma
         self.gamma = reward_decay
-        # Value of epsilon
-        self.epsilon = e_greedy
         # Creating full Q-table for all cells
         self.q_table = pd.DataFrame(columns=self.actions, dtype=np.float64)
         # Creating Q-table for cells of the final route

@@ -3,7 +3,7 @@ import warnings
 
 thr = 10 # threshold distance to the terminal for making decision of the done flag
 v = 10 #机器人每次移动距离
-
+obstacle_width=10
 # warnings.simplefilter("error")
 warnings.simplefilter("ignore", UserWarning)
 
@@ -14,26 +14,27 @@ class Environment(object):
   def __init__(self, initial_position, target_position,X_max, Y_max, num_actions):
     #Initial state of the system:
     self.state0 = np.zeros((2,11,11)) #初始状态,三位数组,维度为3*11*11，所有元素都初始化为0
-    self.state0[0][9][1] = 1 # robot initial position
+    self.state0[0][10][1] = 1 # robot initial position
 
-    self.Obstacle_x = [0 , 1, 1, 1, 1, 2 ,4 ,4 ,4 ,4 ,5, 5, 5, 6, 8,8 ,8 , 9, 9, 9,9, 10, 10]
-    self.Obstacle_y = [2, 6, 5, 2,1,1, 8,7, 4, 3, 7,6 , 3, 6, 10, 9, 3, 10, 9, 4, 3, 10, 9]
+    self.Obstacle_x = [3,3,3,3,3,3,7,7,7,7,7,7]
+    self.Obstacle_y = [5,6,7,8,9,10,0,1,2,3,4,5]
 
-    self.vector_obstacle_x=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-    self.vector_obstacle_y=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    self.vector_obstacle_x=[0]*len(self.Obstacle_x)
+    self.vector_obstacle_y=[0]*len(self.Obstacle_x)
+
     for i in range(len(self.Obstacle_x)):
       self.vector_obstacle_x[i]=10*(self.Obstacle_x[i]-0.5)
       self.vector_obstacle_y[i]=10*(10 - self.Obstacle_y[i] -0.5)
     
-    self.obstacle =  [np.zeros((1, 4)).tolist() for i in range(23)]
+    self.obstacle =  [np.zeros((1, 4)).tolist() for i in range(len(self.Obstacle_x))]
     for i in range(len(self.vector_obstacle_x)):
-      self.obstacle[i]=[self.vector_obstacle_x[i],self.vector_obstacle_y[i],10,10]
+      self.obstacle[i]=[self.vector_obstacle_x[i],self.vector_obstacle_y[i],obstacle_width,obstacle_width]
 
     #将self.Obstacle_x和self.Obstacle_y中的元素作为索引，在self.state0数组中的特定位置赋值为1
     for i in range(len(self.Obstacle_x)):
       self.state0[1, self.Obstacle_y[i], self.Obstacle_x[i]] = 1 #将障碍物位置的元素值初始化为1
 
-    self.state0[1][1][9] = 1 #the position of the Terminal
+    self.state0[1][0][9] = 1 #the position of the Terminal
     self.X_max = X_max #range of X: X_max, the min is 0，X轴范围
     self.Y_max = Y_max #range of Y: Y_max, the min is 0，Y轴范围
     self.vector_state0 = np.asarray(initial_position) #initial state，robot initial position, (10,10)
@@ -44,7 +45,7 @@ class Environment(object):
 
     self.Terminal = np.asarray(target_position) #np.asarray([90., 90.]) # terminal 2
     self.doneType = 0 # flag showing type of done! 是否完成寻路
-    self.max_episode_steps = 5000 #每个回合最大步数
+    self.max_episode_steps = 10000 #每个回合最大步数
     self.steps_counter = 0 #步数计数器
     self.num_actions = num_actions #number of actions
 
@@ -60,9 +61,9 @@ class Environment(object):
     # Showing the steps for the shortest route
     self.shortest = 0
 
-    #self.actionspace = {0: [0,0], 1:[v,0], 2:[v,v], 3: [0,v], 4: [-v,v], \
-    #                    5:[-v,0], 6:[-v,-v], 7:[0,-v], 8: [v,-v]}
-    self.actionspace = {0:[v,0], 1:[0,v], 2: [-v,0], 3: [0,-v]} #action space
+    self.actionspace = {0:[v,0], 1:[0,v], 2: [-v,0], 3: [0,-v], 4: [-v,v], \
+                      5:[-v,-v], 6:[v,v], 7: [v,-v]} #8 actions
+    # self.actionspace = {0:[v,0], 1:[0,v], 2: [-v,0], 3: [0,-v]} #action space, 4 actions
     
   def reset(self): #环境重置
     self.agentState = np.copy(self.state0)
@@ -89,7 +90,7 @@ class Environment(object):
       self.vector_agentState[1] = 100
 
     # Writing in the dictionary coordinates of found route
-    self.dic[self.index] = self.vector_agentState #将坐标加入路径字典
+    self.dic[self.index] = self.vector_agentState.tolist() #将坐标加入路径字典
 
     # Updating key for the dictionary
     self.index += 1
@@ -103,7 +104,7 @@ class Environment(object):
     self.steps_counter +=1 #step accumulate 1
     self.Is_Terminal = self.isTerminal() # achieve the terminal or not
     
-    reward,next_state_flag = self.get_reward(self.vector_agentState)     
+    reward,next_state_flag = self.get_reward(self.vector_agentState,action)     
 
     return self.agentState, next_state_flag,reward, self.Is_Terminal , None
 
@@ -120,12 +121,12 @@ class Environment(object):
       return False
 
 #function for geting rewards
-  def get_reward(self,state):
+  def get_reward(self,state,action):
 #    ch, dist = self.channel()
     reward = 0 # initialize the reward as 0
     #Cooridinate change
-    i_x = int(np.copy(self.vector_agentState[0])/10)
-    i_y = int(10 - np.copy(self.vector_agentState[1])/10)
+    # i_x = int(np.copy(self.vector_agentState[0])/10)
+    # i_y = int(10 - np.copy(self.vector_agentState[1])/10)
     
     # agent doesn't achieve the terminal
     if not self.Is_Terminal: 
@@ -134,7 +135,10 @@ class Environment(object):
           reward=-20
           next_state_flag = 'obstacle'
       else:
-          reward=-1
+          if action==0 or action==1 or action==2 or action==3:
+            reward=-1
+          else:
+            reward=-1.5
           next_state_flag = 'continue'
 
     elif self.doneType == 1:
@@ -148,18 +152,19 @@ class Environment(object):
             self.longest = len(self.dic)
             self.shortest = len(self.dic)
       # Checking if the currently found route is shorter
-        if len(self.dic) < len(self.final_path):
-            # Saving the number of steps for the shortest route
-            self.shortest = len(self.dic)
-            # Clearing the dictionary for the final route
-            self.final_path = {}
-            # Reassigning the dictionary
-            for j in range(len(self.dic)):
-                self.final_path[j] = self.dic[j] #将当前路径作为最终路径
+        else:
+          if len(self.dic) < len(self.final_path):
+              # Saving the number of steps for the shortest route
+              self.shortest = len(self.dic)
+              # Clearing the dictionary for the final route
+              self.final_path = {}
+              # Reassigning the dictionary
+              for j in range(len(self.dic)):
+                  self.final_path[j] = self.dic[j] #将当前路径作为最终路径
 
-        # Saving the number of steps for the longest route
-        if len(self.dic) > self.longest:
-            self.longest = len(self.dic)
+          # Saving the number of steps for the longest route
+          if len(self.dic) > self.longest:
+              self.longest = len(self.dic)
     return reward, next_state_flag 
   
   # Function to show the found route
@@ -173,10 +178,10 @@ class Environment(object):
           final_route[j] = self.final_path[j]
 
   def is_collision(self,state):
-    delta = 0.5
+    delta = 0.5*obstacle_width
     for (x, y, w, h) in self.obstacle: #与矩形障碍物相撞
-      if 0 <= state[0] - (x - delta) <= w + 2 * delta \
-            and 0 <= state[1] - (y - delta) <= h + 2 * delta:
+      if 0 <= state[0] - (x - delta) <= w  \
+            and 0 <= state[1] - (y - delta) <= h :
         return True
 
 # Returning the final dictionary with route coordinates
