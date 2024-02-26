@@ -12,3 +12,12 @@ The environment:
 * Emits reward.
 
 The following image shows the environment I estabilshed for this problem:
+<img src="Figures/Map.png" alt="env" > 
+
+Red square: starting position and target position
+
+Blue blocks: obstacles
+
+
+
+
