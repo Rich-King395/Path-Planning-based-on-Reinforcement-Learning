@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 gamma = 0.99
-num_episodes=1000
-epsilon=eps =0.1
+num_episodes=500
+epsilon=eps =0.2
 Start_epsilon_decaying = 0
 #End_epsilon_decaying = num_episodes // 1
 End_epsilon_decaying = num_episodes
@@ -137,6 +137,7 @@ def update():
     plt.yticks(size = '12')
     plt.gca().set_aspect('equal', adjustable='box')
     plt.savefig('SARSA_Shortest_Path.eps',format = 'eps')
+    #plt.savefig('Map.eps',format = 'eps')
 
     plt.figure()
     #绘制矢量场图
