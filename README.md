@@ -18,6 +18,10 @@ Red square: starting position and target position
 
 Blue blocks: obstacles
 
+For SARSA and DQN, the state of the agent is the coordinate of it in the map. For DQN, the state of the agent is the image of the map at that time. The action space of the three algorithms are the same shown in the following image:
+
+
+
 
 
 
