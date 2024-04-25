@@ -22,7 +22,7 @@ For SARSA and DQN, the state of the agent is the coordinate of it in the map. Fo
 <img src="Figures/action.png" alt="env" width=400 height=400 > 
 
 ## Report
-The final report of my final year project is available on arXiv:
+The final report of this project is available on arXiv:
 ```latex
 @misc{ruiqi2024research,
       title={Research on Robot Path Planning Based on Reinforcement Learning}, 
